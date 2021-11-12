@@ -10,10 +10,13 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import br.senai.sp.jandira.model.Aluno;
 import br.senai.sp.jandira.model.Periodo;
@@ -81,7 +84,7 @@ public class FrameCadastroAluno extends JFrame {
 		btnSalvar.setBounds(20, 153, 225, 40);
 		contentPane.add(btnSalvar);
 
-		JComboBox<String> comboPedriodo = new JComboBox<String>();
+		JComboBox<String> comboPeriodo = new JComboBox<String>();
 		DefaultComboBoxModel<String> comboModelPeriodo = new DefaultComboBoxModel<String>();
 
 		for (Periodo descricao : Periodo.values()) {
@@ -89,27 +92,26 @@ public class FrameCadastroAluno extends JFrame {
 		}
 
 		// comboPedriodo.setModel(new DefaultComboBoxModel(Periodo.values()));
-		comboPedriodo.setModel(comboModelPeriodo);
-		comboPedriodo.setToolTipText("");
-		comboPedriodo.setBounds(95, 107, 150, 22);
-		contentPane.add(comboPedriodo);
+		comboPeriodo.setModel(comboModelPeriodo);
+		comboPeriodo.setToolTipText("");
+		comboPeriodo.setBounds(95, 107, 150, 22);
+		contentPane.add(comboPeriodo);
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(276, 47, 191, 197);
 		contentPane.add(scrollPane);
-		
-				JList listAlunos = new JList();
-				scrollPane.setViewportView(listAlunos);
-				
+
+		JList listAlunos = new JList();
+		scrollPane.setViewportView(listAlunos);
 
 		// criar model que vau exibir os alunos na Jlist
 		DefaultListModel<String> modelAlunos = new DefaultListModel<String>();
 
 		// definir model alun como sendo o model do nosso Jlist
 		listAlunos.setModel(modelAlunos);
-		
+
 		// criar uma turma que e um repositorio de alunos
-		AlunoRepository turma = new AlunoRepository(5);
+		AlunoRepository turma = new AlunoRepository();
 
 		// vamos colocar um listiner no botão
 		btnSalvar.addActionListener(new ActionListener() {
@@ -121,11 +123,20 @@ public class FrameCadastroAluno extends JFrame {
 				aluno.setNome(txtAluno.getText());
 				aluno.setMatricula(txtMatricula.getText());
 
+				// Definir o horario que o aluno estuda
+				aluno.setPerido(determinarPerido(comboPeriodo.getSelectedIndex()));
+
 				turma.gravar(aluno, posicao);
 
-				posicao ++;
+				posicao++;
 
 				modelAlunos.addElement(aluno.getNome());
+				if (posicao == turma.getTamanho()) {
+					btnSalvar.setEnabled(false);
+					JOptionPane.showMessageDialog(null, "A turma já está completa", "cheio",
+							JOptionPane.WARNING_MESSAGE);
+				}
+				
 
 			}
 		});
@@ -134,21 +145,49 @@ public class FrameCadastroAluno extends JFrame {
 		lblLista.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		lblLista.setBounds(276, 28, 113, 14);
 		contentPane.add(lblLista);
-		
-		JButton btnLala = new JButton("testar repositorio");
+
+		JButton btnLala = new JButton("Exibir Alunos");
 		btnLala.setBounds(20, 204, 225, 40);
 		contentPane.add(btnLala);
 		btnLala.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				for (Aluno aluno : turma.listarTodos()) {
 					System.out.println(aluno.getNome());
 					System.out.println(aluno.getMatricula());
-					System.out.println("-------------------------");
+					System.out.println(aluno.getPeriodo().getDescricao());
+					System.out.println("---------------------");
+
 				}
+
+			}
+		});
+		listAlunos.addListSelectionListener(new ListSelectionListener() {			
+			public void valueChanged(ListSelectionEvent e) {
+				 Aluno aluno = turma.listarAluno(listAlunos.getSelectedIndex());
+				 txtMatricula.setText(aluno.getMatricula());
+				 txtAluno.setText(aluno.getNome());
+				 comboPeriodo.setSelectedIndex(aluno.getPeriodo().ordinal());				
 				
 			}
 		});
 	}
+
+	private Periodo determinarPerido(int periodoSelecionado) {
+
+		if (periodoSelecionado == 0) {
+			return Periodo.MANHA;
+		} else if (periodoSelecionado == 1) {
+			return Periodo.TARDE;
+		} else if (periodoSelecionado == 2) {
+			return Periodo.NOITE;
+		} else if (periodoSelecionado == 3) {
+			return Periodo.SABADO;
+		} else {
+			return Periodo.ONLINE;
+		}
+
+	}
+
 }

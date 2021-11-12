@@ -4,7 +4,7 @@ public class Aluno {
 
 	private String nome;
 	private String matricula;
-	private Periodo perido;
+	private Periodo periodo;
 
 	public void setNome(String nome) {
 		this.nome = nome;
@@ -22,12 +22,13 @@ public class Aluno {
 		return matricula;
 	}
 
-	public void setPerido(Periodo perido) {
-		this.perido = perido;
+	public void setPerido(Periodo periodo) {
+		this.periodo = periodo;
 	}
 
-	public Periodo getPerido() {
-		return perido;
+	public Periodo getPeriodo() {
+		return periodo;
 	}
+	
 
 }
